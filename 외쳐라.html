@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청년회 집회 200명</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #5D9CBA 0%, #7DD3C0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #7DD3C0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .counter-display {
+            font-size: 6em;
+            color: #5D9CBA;
+            font-weight: bold;
+            margin: 30px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .count-button {
+            background: linear-gradient(45deg, #5D9CBA, #7DD3C0);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(93, 156, 186, 0.4);
+        }
+
+        .count-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(93, 156, 186, 0.6);
+        }
+
+        .count-button:active {
+            transform: translateY(-1px);
+        }
+
+        .count-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+            margin: 20px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: #E8F5F1;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #5D9CBA;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .history-section {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .history-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #C8E6C9;
+            border-radius: 10px;
+            padding: 15px;
+            background: #F1F8E9;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .target-name {
+            font-weight: bold;
+            color: #5D9CBA;
+            font-size: 1.1em;
+        }
+
+        .pray-by {
+            color: #888;
+            font-size: 0.9em;
+            margin-left: 8px;
+            font-style: italic;
+        }
+
+        .prayer-request {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .input-guide {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #5D9CBA;
+            font-size: 1.1em;
+        }
+
+        .history-time {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .history-count {
+            background: linear-gradient(45deg, #5D9CBA, #7DD3C0);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .no-history {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #cc0000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .modal-input:focus {
+            border-color: #5D9CBA;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-confirm {
+            background: linear-gradient(45deg, #5D9CBA, #7DD3C0);
+            color: white;
+        }
+
+        .modal-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(93, 156, 186, 0.4);
+        }
+
+        .modal-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .modal-cancel:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🔥 청년회 집회 200명</h1>
+        <p class="subtitle">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="connectionStatus">연결 중...</span>
+        </p>
+        
+        <div class="counter-display" id="counterDisplay">0</div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="uniqueTargets">0</div>
+                <div class="stat-label">기도 부탁 인원</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="onlineUsers">0</div>
+                <div class="stat-label">현재 접속자</div>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <strong>오류 발생!</strong><br>
+            인터넷 연결을 확인하고 페이지를 새로고침해주세요.
+        </div>
+
+        <div class="input-section">
+            <div class="input-guide">
+                <p>🙏 기도 요청을 등록해보세요</p>
+                <p style="font-size: 0.9em; color: #888; margin-top: 5px;">버튼을 클릭하면 입력창이 나타납니다</p>
+            </div>
+            
+            <button id="countButton" class="count-button" onclick="showPrayerModal()" disabled>
+                🔥 외쳐라!
+            </button>
+        </div>
+
+        <div class="history-section">
+            <h3 class="history-title">🙏 실시간 기도 요청</h3>
+            <div class="history-list" id="historyList">
+                <div class="loading">데이터를 불러오는 중...</div>
+            </div>
+        </div>
+
+        <!-- 기도 요청 입력 모달 -->
+        <div id="prayerModal" class="modal">
+            <div class="modal-content">
+                <h3 class="modal-title">🙏 기도 요청 등록</h3>
+                
+                <input type="text" id="modalTargetInput" class="modal-input" placeholder="기도 대상자 (누구를 위해 기도하나요?)" maxlength="20">
+                
+                <input type="text" id="modalNameInput" class="modal-input" placeholder="내 이름 (기도하는 사람)" maxlength="20">
+                
+                <div class="modal-buttons">
+                    <button class="modal-button modal-cancel" onclick="closePrayerModal()">취소</button>
+                    <button class="modal-button modal-confirm" onclick="submitPrayer()">🔥 외쳐라!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database-compat.min.js"></script>
+
+    <script>
+        // Firebase 설정 - 실제 Firebase 프로젝트 연결됨!
+        const firebaseConfig = {
+            apiKey: "AIzaSyCa3t1OZhYHvfEbF1128_6hXllSiFs4Yqg",
+            authDomain: "test-200-d3157.firebaseapp.com",
+            databaseURL: "https://test-200-d3157-default-rtdb.firebaseio.com",
+            projectId: "test-200-d3157",
+            storageBucket: "test-200-d3157.firebasestorage.app",
+            messagingSenderId: "480384763191",
+            appId: "1:480384763191:web:2018511bd6d2dbdd7606b2",
+            measurementId: "G-EY9LJEC31T"
+        };
+
+        // Firebase 앱이 이미 초기화되지 않았다면 초기화
+        let app;
+        let database;
+        let isConnected = false;
+        
+        try {
+            if (!firebase.apps.length) {
+                app = firebase.initializeApp(firebaseConfig);
+            } else {
+                app = firebase.app();
+            }
+            database = firebase.database();
+            
+            // 연결 상태 모니터링
+            const connectedRef = database.ref('.info/connected');
+            connectedRef.on('value', (snapshot) => {
+                isConnected = snapshot.val();
+                updateConnectionStatus();
+            });
+            
+        } catch (error) {
+            console.log('Firebase를 사용할 수 없어 로컬 모드로 실행합니다.');
+            // Firebase를 사용할 수 없을 때 로컬 모드로 폴백
+            initLocalMode();
+        }
+
+        // DOM 요소들
+        const counterDisplay = document.getElementById('counterDisplay');
+        const countButton = document.getElementById('countButton');
+        const historyList = document.getElementById('historyList');
+        const uniqueTargets = document.getElementById('uniqueTargets');
+        const onlineUsers = document.getElementById('onlineUsers');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // 모달 관련 요소들
+        const prayerModal = document.getElementById('prayerModal');
+        const modalTargetInput = document.getElementById('modalTargetInput');
+        const modalNameInput = document.getElementById('modalNameInput');
+
+        // 게임 데이터 (로컬 모드용)
+        let localGameData = {
+            counter: 0,
+            history: []
+        };
+
+        // 연결 상태 업데이트
+        function updateConnectionStatus() {
+            if (isConnected) {
+                statusIndicator.classList.add('connected');
+                connectionStatus.textContent = '실시간 연결됨';
+                countButton.disabled = false;
+                errorMessage.style.display = 'none';
+            } else {
+                statusIndicator.classList.remove('connected');
+                connectionStatus.textContent = '연결 끊김';
+                countButton.disabled = true;
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        // Firebase 모드 초기화
+        function initFirebaseMode() {
+            if (!database) return;
+
+            // 카운터 실시간 리스너
+            database.ref('gameData/counter').on('value', (snapshot) => {
+                const count = snapshot.val() || 0;
+                counterDisplay.textContent = count;
+                animateCounter();
+            });
+
+            // 히스토리 실시간 리스너
+            database.ref('gameData/history').limitToLast(50).on('value', (snapshot) => {
+                const historyData = snapshot.val();
+                if (historyData) {
+                    const historyArray = Object.keys(historyData).map(key => ({
+                        ...historyData[key],
+                        id: key
+                    })).sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    updateHistoryDisplay(historyArray);
+                    
+                    // 기도 대상자 + 기도자 조합으로 중복 제거해서 카운트 (동명이인 고려)
+                    const uniqueTargetCombinations = new Set();
+                    historyArray.forEach(item => {
+                        if (item.targetName && item.myName) {
+                            // 기도 대상자 + 기도자 조합으로 고유 키 생성
+                            uniqueTargetCombinations.add(`${item.targetName.trim()}|${item.myName.trim()}`);
+                        }
+                        // 기존 데이터 호환성을 위해 (name 필드가 기도 대상자인 경우)
+                        if (item.name && !item.targetName) {
+                            uniqueTargetCombinations.add(`${item.name.trim()}|unknown`);
+                        }
+                    });
+                    uniqueTargets.textContent = uniqueTargetCombinations.size;
+                } else {
+                    updateHistoryDisplay([]);
+                    uniqueTargets.textContent = 0;
+                }
+            });
+
+            // 온라인 사용자 수 추적
+            const userRef = database.ref('onlineUsers').push();
+            userRef.set(true);
+            userRef.onDisconnect().remove();
+            
+            database.ref('onlineUsers').on('value', (snapshot) => {
+                const count = snapshot.numChildren();
+                onlineUsers.textContent = count;
+            });
+
+            countButton.disabled = false;
+        }
+
+        // 로컬 모드 초기화 (Firebase를 사용할 수 없을 때)
+        function initLocalMode() {
+            console.log('로컬 모드로 실행 중...');
+            connectionStatus.textContent = '로컬 모드 (단일 기기)';
+            statusIndicator.style.background = '#A8E6CF';
+            countButton.disabled = false;
+            onlineUsers.textContent = 1;
+            
+            // 로컬 데이터로 초기 표시
+            updateLocalDisplay();
+        }
+
+        // 모달 관련 함수들
+        function showPrayerModal() {
+            prayerModal.style.display = 'block';
+            modalTargetInput.focus();
+            modalTargetInput.value = '';
+            modalNameInput.value = '';
+        }
+
+        function closePrayerModal() {
+            prayerModal.style.display = 'none';
+        }
+
+        function submitPrayer() {
+            const targetName = modalTargetInput.value.trim();
+            const myName = modalNameInput.value.trim();
+            
+            if (!targetName) {
+                alert('🙏 기도 대상자를 입력해주세요!\n(누구를 위해 기도하시나요?)');
+                modalTargetInput.focus();
+                return;
+            }
+            
+            if (!myName) {
+                alert('✍️ 본인의 이름을 입력해주세요!\n(기도하는 분의 이름)');
+                modalNameInput.focus();
+                return;
+            }
+
+            // 모달 닫기
+            closePrayerModal();
+            
+            // 기도 요청 등록
+            incrementCounter(targetName, myName);
+        }
+
+        // 카운터 증가 함수
+        async function incrementCounter(targetName, myName) {
+            try {
+                if (database && isConnected) {
+                    // Firebase 모드
+                    const now = Date.now();
+                    const updates = {};
+                    
+                    // 카운터 증가
+                    const currentCount = await database.ref('gameData/counter').once('value');
+                    const newCount = (currentCount.val() || 0) + 1;
+                    updates['gameData/counter'] = newCount;
+                    
+                    // 히스토리 추가
+                    const historyRef = database.ref('gameData/history').push();
+                    updates[`gameData/history/${historyRef.key}`] = {
+                        targetName: targetName,
+                        myName: myName,
+                        timestamp: now,
+                        time: new Date(now).toLocaleString('ko-KR'),
+                        count: newCount
+                    };
+                    
+                    await database.ref().update(updates);
+                } else {
+                    // 로컬 모드
+                    localGameData.counter++;
+                    const historyItem = {
+                        targetName: targetName,
+                        myName: myName,
+                        time: new Date().toLocaleString('ko-KR'),
+                        count: localGameData.counter,
+                        timestamp: Date.now()
+                    };
+                    
+                    localGameData.history.unshift(historyItem);
+                    // players Set은 더 이상 사용하지 않음 (중복 제거 로직이 변경됨)
+                    
+                    updateLocalDisplay();
+                }
+                
+                // 버튼 애니메이션
+                animateButton();
+                
+            } catch (error) {
+                console.error('카운트 증가 중 오류 발생:', error);
+                alert('오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 로컬 표시 업데이트
+        function updateLocalDisplay() {
+            counterDisplay.textContent = localGameData.counter;
+            
+            // 기도 대상자 + 기도자 조합으로 중복 제거해서 카운트 (동명이인 고려)
+            const uniqueTargetCombinations = new Set();
+            localGameData.history.forEach(item => {
+                if (item.targetName && item.myName) {
+                    // 기도 대상자 + 기도자 조합으로 고유 키 생성
+                    uniqueTargetCombinations.add(`${item.targetName.trim()}|${item.myName.trim()}`);
+                }
+                // 기존 데이터 호환성을 위해
+                if (item.name && !item.targetName) {
+                    uniqueTargetCombinations.add(`${item.name.trim()}|unknown`);
+                }
+            });
+            uniqueTargets.textContent = uniqueTargetCombinations.size;
+            
+            updateHistoryDisplay(localGameData.history);
+            animateCounter();
+        }
+
+        // 히스토리 표시 업데이트
+        function updateHistoryDisplay(historyArray) {
+            if (!historyArray || historyArray.length === 0) {
+                historyList.innerHTML = '<div class="no-history">아직 기도 요청이 없습니다!</div>';
+                return;
+            }
+
+            let historyHTML = '';
+            historyArray.forEach(item => {
+                historyHTML += `
+                    <div class="history-item">
+                        <div>
+                            <div class="prayer-request">
+                                <span class="target-name">🙏 ${item.targetName || item.name}</span>
+                                ${item.myName ? `<span class="pray-by">by ${item.myName}</span>` : ''}
+                            </div>
+                            <div class="history-time">${item.time}</div>
+                        </div>
+                        <div class="history-count">#${item.count}</div>
+                    </div>
+                `;
+            });
+            
+            historyList.innerHTML = historyHTML;
+        }
+
+        // 애니메이션 함수들
+        function animateButton() {
+            countButton.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                countButton.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        function animateCounter() {
+            counterDisplay.style.transform = 'scale(1.1)';
+            counterDisplay.style.color = '#7DD3C0';
+            setTimeout(() => {
+                counterDisplay.style.transform = 'scale(1)';
+                counterDisplay.style.color = '#5D9CBA';
+            }, 200);
+        }
+
+        // 이벤트 리스너
+        modalTargetInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (modalTargetInput.value.trim()) {
+                    modalNameInput.focus(); // 다음 입력창으로 이동
+                } else {
+                    alert('🙏 기도 대상자를 입력해주세요!');
+                }
+            }
+        });
+
+        modalNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitPrayer();
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        prayerModal.addEventListener('click', function(e) {
+            if (e.target === prayerModal) {
+                closePrayerModal();
+            }
+        });
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && prayerModal.style.display === 'block') {
+                closePrayerModal();
+            }
+        });
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            // Firebase 모드 시도
+            if (database) {
+                initFirebaseMode();
+            }
+        });
+
+        // 페이지 종료 시 정리
+        window.addEventListener('beforeunload', function() {
+            if (database) {
+                database.goOffline();
+            }
+        });
+    </script>
+</body>
+</html>
